@@ -7,6 +7,10 @@ from scipy import integrate
 import matplotlib
 matplotlib.use('tkagg')
 import matplotlib.pyplot as plt
+import os 
+
+
+print(os.getpid())
 
 # Get the forward and backward data 
 path_to_forward = '/home/adrian/PhD/AxiSEM3D/CMB/simu1D_element/FORWARD'
