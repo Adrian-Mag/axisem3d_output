@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import integrate
 import sys
 sys.path.append('/home/adrian/PhD/AxiSEM3D/Output_Handlers')
-from element_output import element_output
-import pandas as pd
+from AxiSEM3D_Data_Handler.element_output import element_output
 
 
 def sph2cart(rad, lat, lon):

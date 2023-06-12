@@ -1,0 +1,28 @@
+netcdf axisem3d_synthetics.nc {
+dimensions:
+	dim_time = 3967 ;
+	dim_element__NaG\=5 = 603 ;
+	dim_na__NaG\=5 = 5 ;
+	dim_GLL = 9 ;
+	dim_channel = 3 ;
+	dim_channel_str_length = 2 ;
+	dim_na_grid = 1 ;
+	dim_element = 603 ;
+	dim_5 = 5 ;
+	dim_2 = 2 ;
+variables:
+	double data_time(dim_time) ;
+		data_time:_FillValue = -123450000000000. ;
+	float data_wave__NaG\=5(dim_element__NaG\=5, dim_na__NaG\=5, dim_GLL, dim_channel, dim_time) ;
+		data_wave__NaG\=5:_FillValue = -1.2345e+14f ;
+	char list_channel(dim_channel, dim_channel_str_length) ;
+		list_channel:_FillValue = "" ;
+	int list_element__NaG\=5(dim_element__NaG\=5) ;
+		list_element__NaG\=5:_FillValue = -1 ;
+	int list_na_grid(dim_na_grid) ;
+		list_na_grid:_FillValue = -1 ;
+	int list_element_na(dim_element, dim_5) ;
+		list_element_na:_FillValue = -1 ;
+	double list_element_coords(dim_element, dim_GLL, dim_2) ;
+		list_element_coords:_FillValue = -123450000000000. ;
+}

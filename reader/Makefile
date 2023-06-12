@@ -1,6 +1,6 @@
 # Compiler options
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -g
+CXXFLAGS = -std=c++17 -lboost_filesystem -Wall -g
 
 # Directories
 SRC_DIR = /home/adrian/PhD/AxiSEM3D/AxiSEM3D_Kernels/reader
