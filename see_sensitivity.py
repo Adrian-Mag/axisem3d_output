@@ -10,7 +10,7 @@ def spherical_to_cart(rad, lat, lon):
     return [x, y, z]
 
 
-df = pd.read_csv('/home/adrian/PhD/AxiSEM3D/AxiSEM3D_Kernels/sensitivity_test.txt', sep=' ')
+df = pd.read_csv('/disks/data/PhD/sensitivity_rho.txt', sep=' ')
 
 max_sensitivity = df['sensitivity'].abs().max()
 
