@@ -7,7 +7,28 @@ import fnmatch
 import sys
 from obspy.taup import TauPyModel
 
+############
+# PARAMETERS
+############
+# Path to the mseed file of real data
+real_data_path = '/disks/data/PhD/CMB/simu3D_CMB/REAL_DATA/output/obspyfied/REAL_DATA.mseed'
+# Path to element output of synthetic data
+element_path = '/disks/data/PhD/CMB/simu1D_element/FORWARD_DATA'
 
+# location info
+network = 'A'
+station = '22'
+location = '*'
+channel_type = 'RTZ'
+
+# Window size [seconds]
+T = 40
+# Phase
+phase = 'PcP'
+
+###############
+# IMPLEMENTATION
+###############
 
 def search_files(directory, keyword, include_subdirectories=True):
     """
@@ -49,25 +70,15 @@ def eliminate_data_outside_range(time_array, data_array, t_min, t_max):
     filtered_data_array = data_array[mask]
     return filtered_time_array, filtered_data_array
 
-############
-# PARAMETERS
-############
-# Path to the mseed file of real data
-real_data_path = '/disks/data/PhD/CMB/simu3D_CMB/REAL_DATA/output/obspyfied/REAL_DATA.mseed'
-# Path to element output of synthetic data
-element_path = '/disks/data/PhD/CMB/simu1D_element/FORWARD_DATA'
-
-# location info
-network = 'A'
-station = '22'
-location = '*'
-channel_type = 'RTZ'
-
-# Window size [seconds]
-T = 40
-# Phase
-phase = 'PcP'
-
+def save_STF(directory, master_time, STF, channel_type):
+    for index, channel in enumerate(channel_type):
+        # Save results to a text file
+        filename = directory + channel + '.txt'
+        # Combine time and data arrays column-wise
+        combined_data = np.column_stack((master_time, STF[channel]))
+        print(STF[channel])
+        # Save the combined data to a text file
+        np.savetxt(filename, combined_data, fmt='%.16f', delimiter='\t')
 
 ################
 # LOAD REAL DATA
@@ -75,13 +86,16 @@ phase = 'PcP'
 # Load the mseed file
 try: 
     stream_real_data = read(real_data_path)
-except:
+except FileNotFoundError:
     raise FileNotFoundError('File {} not found'.format(real_data_path))
     sys.exit(1)
 
+# get name to be used for naming files
 real_data_name = real_data_path.split('/')[-1]
+# get real data time and time step
 real_data_time = stream_real_data[0].times(type="relative")
 dt_real_data = real_data_time[1] - real_data_time[0]
+# Select the specific station data
 stream_real_data = stream_real_data.select(station=station)
 
 # Find inventories in the output directory
@@ -114,7 +128,7 @@ elif len(catalogues) == 0:
 else:
     catalogue = catalogues[0]
 
-# Extract the station coordindates from that inventory
+# Extract the station coordinates from that inventory
 inventory = read_inventory(inventory)
 inventory = inventory.select(network=network, 
                              station=station, 
@@ -123,29 +137,28 @@ station_depth = -inventory[0][0].elevation
 station_latitude = inventory[0][0].latitude
 station_longitude = inventory[0][0].longitude
 
-# Extract event information from that catalogue:
+# Extract event information from that catalogue
 try:
     catalogue = read_events(catalogue)
-except:
+except FileNotFoundError:
     raise FileNotFoundError('The file {} was not found.'.format(catalogue))
 
 if len(catalogue) > 1:
-    print('The simulation is not based on a single point source. \
-          This code can not cope with that yet.')
+    print('The simulation is not based on a single point source. '
+          'This code can not cope with that yet.')
     sys.exit(1)
 elif len(catalogue) == 1:
-    event_depth = catalogue[0].origins[0].depth * 1e-3 # must be in km for get_travel_times_geo
+    event_depth = catalogue[0].origins[0].depth * 1e-3  # must be in km for get_travel_times_geo
     event_latitude = catalogue[0].origins[0].latitude
     event_longitude = catalogue[0].origins[0].longitude
 else:
     raise ValueError('No events were found in the catalogue!')
     sys.exit(1)
 
-
 #####################
 # LOAD SYNTHETIC DATA
 #####################
-# Get the synthetica data
+# Get the synthetic data
 element_data_name = element_path.split('/')[-1].split('.')[0]
 element_obj = element_output(element_path, [0, 2, 4])
 stream_forward_data = element_obj.stream(station_depth, 
@@ -179,10 +192,11 @@ else:
 # Find if all arrivals can fit in the window
 if max(arrival_times) - min(arrival_times) > T:
     print('Not all arrival_times can fit in the time window')
-    option = input('Choose an option: \n 0-Modify window to {} so that they all fit \n 1-Choose only the first arrival_times that fit in window \n 2-Abort'.format(max(arrival_times) - min(arrival_times)))
+    option = input('Choose an option: \n 0-Modify window to {} so that they all fit \n '
+                   '1-Choose only the first arrival_times that fit in window \n 2-Abort'.format(max(arrival_times) - min(arrival_times)))
 
     if option == 0:
-        window_left = min(arrival_times) -T/2
+        window_left = min(arrival_times) - T/2
         window_right = max(arrival_times) + T/2
     elif option == 1:
         window_left = min(arrival_times) - T/2
@@ -194,7 +208,7 @@ else:
     window_right = window_left + T/2
 
 #################
-# COMPUTE RESIDUE 
+# COMPUTE RESIDUE
 #################
 
 # Find the master time (minmax/maxmin)
@@ -210,11 +224,11 @@ interpolated_forward_data = []
 residue = {}
 for _, channel in enumerate(channel_type):
     interpolated_real_data = np.interp(master_time, 
-                                            real_data_time, 
-                                            stream_real_data.select(channel='LX' + channel)[0].data)
+                                      real_data_time, 
+                                      stream_real_data.select(channel='LX' + channel)[0].data)
     interpolated_forward_data = np.interp(master_time, 
-                                               forward_time, 
-                                               stream_forward_data.select(channel='LX' + channel)[0].data)
+                                          forward_time, 
+                                          stream_forward_data.select(channel='LX' + channel)[0].data)
     _, windowed_real_data = eliminate_data_outside_range(master_time, interpolated_real_data, window_left, window_right)
     windowed_master_time, windowed_forward_data = eliminate_data_outside_range(master_time, interpolated_forward_data, window_left, window_right)
 
@@ -224,7 +238,7 @@ for _, channel in enumerate(channel_type):
 STF = residue
 
 ##########
-# PLOT STF 
+# PLOT STF
 ##########
 fig, axs = plt.subplots(3, 1)
 
@@ -241,13 +255,9 @@ directory = 'CMB/STFS/' + element_data_name + '_' + real_data_name + '/'
 if not os.path.exists(directory):
     os.makedirs(directory)
     print("Directory created:", directory)
-    for index, channel in enumerate(['R', 'T', 'Z']):
-        # Save results to a text file
-        filename = directory + channel + '.txt'
-        # Combine time and data arrays column-wise
-        combined_data = np.column_stack((master_time, STF[index, :]))
-        print(STF[index, :])
-        # Save the combined data to a text file
-        np.savetxt(filename, combined_data, fmt='%.16f', delimiter='\t')
+    save_STF(directory, windowed_master_time, STF, channel_type)
 else:
     print("Directory already exists:", directory)
+    ans = input('Overwrite the existing data [y/n]: ')
+    if ans == 'y':
+        save_STF(directory, windowed_master_time, STF, channel_type)
