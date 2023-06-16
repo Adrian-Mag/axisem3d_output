@@ -1,27 +1,13 @@
 from AxiSEM3D_Data_Handler.element_output import element_output
-from obspy import read, read_inventory
+from AxiSEM3D_Data_Handler.obspy_output import ObspyfiedOutput
+from .helper_functions import find_phase_window, window_data
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import sys
 
-def eliminate_data_outside_range(time_array, data_array, t_min, t_max):
-    """
-    Eliminate time values and corresponding data outside a specified range.
 
-    Args:
-        time_array (numpy.ndarray): Array of time values.
-        data_array (numpy.ndarray): Array of corresponding data values.
-        t_min (float): Minimum time value to keep.
-        t_max (float): Maximum time value to keep.
 
-    Returns:
-        Tuple[numpy.ndarray, numpy.ndarray]: Tuple containing the filtered time array and corresponding data array.
-    """
-    mask = (time_array >= t_min) & (time_array <= t_max)
-    filtered_time_array = time_array[mask]
-    filtered_data_array = data_array[mask]
-    return filtered_time_array, filtered_data_array
 
 def save_STF(directory, master_time, STF, channel_type):
     for index, channel in enumerate(channel_type):
@@ -33,49 +19,29 @@ def save_STF(directory, master_time, STF, channel_type):
         # Save the combined data to a text file
         np.savetxt(filename, combined_data, fmt='%.16f', delimiter='\t')
 
-def L2_source_builder(real_data_path, forward_data_path, station, network, location, channel_type, window_left, window_right):
+
+def L2_STF_builder(real_data_path, forward_data_path, station, network, location, channel_type, window_left, window_right):
     ################
     # LOAD REAL DATA
     ################
-    # Load the mseed file
-    try: 
-        stream_real_data = read(real_data_path)
-    except FileNotFoundError:
-        raise FileNotFoundError('File {} not found'.format(real_data_path))
-        sys.exit(1)
+    real_data_obspyobj = ObspyfiedOutput(mseed_file_path = real_data_path)
 
-    # get name to be used for naming files
-    real_data_name = real_data_path.split('/')[-1]
+    stream_real_data  = real_data_obspyobj.stream
+    real_data_name = real_data_obspyobj.mseed_file_name
     # get real data time and time step
     real_data_time = stream_real_data[0].times(type="relative")
     dt_real_data = real_data_time[1] - real_data_time[0]
     # Select the specific station data
     stream_real_data = stream_real_data.select(station=station)
 
-    # Find inventories in the output directory
-    real_data_dir = os.path.dirname(real_data_path)
-    real_data_dir = os.path.join(real_data_dir, "")
-    inventories = search_files(real_data_dir, 'inv.xml')
-    if len(inventories) > 1:
-        print('The following inventories have been found: ')
-        for index, element in enumerate(inventories):
-            print(f'{index}: {element}')
-        inventory_index = int(input('Select which one to be used: '))
-        inventory = inventories[inventory_index]
-    elif len(inventories) == 0:
-        raise FileNotFoundError('No inventories have been found!')
-        sys.exit(1)
-    else:
-        inventory = inventories[0]
-
+    inventory = real_data_obspyobj.inv
     # Extract the station coordinates from that inventory
-    inventory = read_inventory(inventory)
     inventory = inventory.select(network=network, 
                                 station=station, 
                                 location=location)
     station_depth = -inventory[0][0].elevation
     station_latitude = inventory[0][0].latitude
-    station_longitude = inventory[0][0].longitude
+    station_longitude = inventory[0][0].longitude    
 
     #####################
     # LOAD SYNTHETIC DATA
@@ -111,12 +77,10 @@ def L2_source_builder(real_data_path, forward_data_path, station, network, locat
         interpolated_forward_data = np.interp(master_time, 
                                             forward_time, 
                                             stream_forward_data.select(channel='LX' + channel)[0].data)
-        _, windowed_real_data = eliminate_data_outside_range(master_time, interpolated_real_data, window_left, window_right)
-        windowed_master_time, windowed_forward_data = eliminate_data_outside_range(master_time, interpolated_forward_data, window_left, window_right)
+        _, windowed_real_data = window_data(master_time, interpolated_real_data, window_left, window_right)
+        windowed_master_time, windowed_forward_data = window_data(master_time, interpolated_forward_data, window_left, window_right)
 
         residue[channel] = np.array(windowed_forward_data) - np.array(windowed_real_data)
-
-    # Subtract
     STF = residue
 
     ##########
