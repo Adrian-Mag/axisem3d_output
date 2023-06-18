@@ -1,6 +1,6 @@
 from obspy.taup import TauPyModel
 import sys
-
+import numpy as np
 
 def find_phase_window(event_depth, event_latitude, event_longitude, 
                       station_latitude, station_longitude, T, phase):
@@ -63,3 +63,17 @@ def window_data(time_array, data_array, t_min, t_max):
     filtered_time_array = time_array[mask]
     filtered_data_array = data_array[:,mask]
     return filtered_time_array, filtered_data_array
+
+def sph2cart(rad, lat, lon):
+    x = rad * np.cos(np.deg2rad(lat)) * np.cos(np.deg2rad(lon))    
+    y = rad * np.cos(np.deg2rad(lat)) * np.sin(np.deg2rad(lon))
+    z = rad * np.sin(np.deg2rad(lat))
+    
+    return np.asarray([x, y, z])
+
+def cart2sph(x, y, z):
+    rad = np.sqrt(x**2 + y**2 + z**2)
+    lat = np.arctan( z / np.sqrt( x**2 + y**2 ) )
+    lon = np.arctan2(y, x)
+    
+    return rad, lat, lon

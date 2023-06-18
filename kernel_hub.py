@@ -68,3 +68,4 @@ if KERNEL_COMPUTATION is True:
     kernel = L2Kernel(element_path, path_to_backward, element_output_geometry,
                         window_left, window_right)
     kernel.evaluate_on_mesh(path_to_inversion_mesh, '/disks/data/PhD/AxiSEM3D-Kernels/KERNELS')
+    

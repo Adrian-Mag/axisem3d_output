@@ -1,7 +1,7 @@
 import sys
 sys.path.append('/home/adrian/PhD/AxiSEM3D/Output_Handlers')
 from AxiSEM3D_Data_Handler.element_output import element_output
-from .helper_functions import window_data
+from .helper_functions import window_data, sph2cart, cart2sph
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,8 @@ import matplotlib
 matplotlib.use('tkagg')
 import matplotlib.pyplot as plt
 import os 
+from tqdm import tqdm
+
 
 class L2Kernel():
 
@@ -92,3 +94,36 @@ class L2Kernel():
         
         sensitivity = integrate.simpson(fw_bw, dx=(windowed_time[1] - windowed_time[0]))
         return sensitivity
+    
+    def evaluate_on_slice(self, source_loc: list, station_loc: list,
+                          R_min: float, R_max: float,N: int, slice_out_path: str):
+        # Form vectors for the two points (Earth frame)
+        point1 = sph2cart(source_loc[0], source_loc[1], source_loc[2])
+        point2 = sph2cart(station_loc[0], station_loc[1], station_loc[2])
+
+        # Do Gram-Schmidt orthogonalization to form slice basis (Earth frame)
+        base1 = point1 / np.linalg.norm(point1)
+        base2 = point2 - np.dot(point2, base1) * base1
+        base2 /= np.linalg.norm(base2)
+
+        # Generate inplane slice mesh (Slice frame)
+        inplane_dim1 = np.linspace(-R_max, R_max, N)
+        inplane_dim2 = np.linspace(-R_max, R_max, N)
+        inplane_DIM1, inplane_DIM2 = np.meshgrid(inplane_dim1, inplane_dim2)
+
+        # Initialize sensitivity values on the slice (Slice frame)
+        inplane_sensitivity = np.zeros((N, N))
+        
+        with tqdm(total=N**2) as pbar:
+            for index1 in range(N):
+                for index2 in range(N):
+                    [x, y, z] = inplane_dim1[index1] * base1 + inplane_dim2[index2] * base2  # Slice frame -> Earth frame
+                    rad, lat, lon = cart2sph(x, y, z)
+                    inplane_sensitivity[index1, index2] = self.evaluate(rad, lat, lon)
+                    pbar.update(1)
+                    
+        plt.figure()
+        plt.contourf(inplane_DIM1, inplane_DIM2, inplane_sensitivity)
+        plt.scatter()
+        plt.colorbar()
+        plt.show()
