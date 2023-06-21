@@ -61,7 +61,10 @@ def window_data(time_array, data_array, t_min, t_max):
     """
     mask = (time_array >= t_min) & (time_array <= t_max)
     filtered_time_array = time_array[mask]
-    filtered_data_array = data_array[:,mask]
+    try:
+        filtered_data_array = data_array[:,mask]
+    except:
+        filtered_data_array = data_array[mask]
     return filtered_time_array, filtered_data_array
 
 def sph2cart(rad, lat, lon):

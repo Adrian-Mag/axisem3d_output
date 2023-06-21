@@ -1,5 +1,3 @@
-import sys
-sys.path.append('/home/adrian/PhD/AxiSEM3D/Output_Handlers')
 from AxiSEM3D_Data_Handler.element_output import element_output
 from .helper_functions import window_data, sph2cart, cart2sph
 
@@ -119,11 +117,15 @@ class L2Kernel():
                 for index2 in range(N):
                     [x, y, z] = inplane_dim1[index1] * base1 + inplane_dim2[index2] * base2  # Slice frame -> Earth frame
                     rad, lat, lon = cart2sph(x, y, z)
-                    inplane_sensitivity[index1, index2] = self.evaluate(rad, lat, lon)
+                    if rad > R_min and rad < R_max:
+                        inplane_sensitivity[index1, index2] = self.evaluate(rad, np.rad2deg(lat), np.rad2deg(lon))
+                    else:
+                        inplane_sensitivity[index1, index2] = np.nan
                     pbar.update(1)
                     
         plt.figure()
         plt.contourf(inplane_DIM1, inplane_DIM2, inplane_sensitivity)
-        plt.scatter()
+        plt.scatter(np.dot(point1, base1), np.dot(point1, base2))
+        plt.scatter(np.dot(point2, base1), np.dot(point2, base2))
         plt.colorbar()
         plt.show()

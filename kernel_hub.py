@@ -11,8 +11,8 @@ from .kernel import L2Kernel
 # CHOICE PARAMETERS
 ###################
 
-SOURCE_BUILDING = False
-KERNEL_COMPUTATION = True
+SOURCE_BUILDING = True
+KERNEL_COMPUTATION = False
 
 ############################
 # SOURCE BUILDING PARAMETERS
@@ -67,5 +67,5 @@ if SOURCE_BUILDING is True:
 if KERNEL_COMPUTATION is True:
     kernel = L2Kernel(element_path, path_to_backward, element_output_geometry,
                         window_left, window_right)
-    kernel.evaluate_on_mesh(path_to_inversion_mesh, '/disks/data/PhD/AxiSEM3D-Kernels/KERNELS')
-    
+    #kernel.evaluate_on_mesh(path_to_inversion_mesh, '/disks/data/PhD/AxiSEM3D-Kernels/KERNELS')
+    kernel.evaluate_on_slice([6371000, 0, 0], [6371000, 0, 30], 3400000, 6371000, 30, 'none')
