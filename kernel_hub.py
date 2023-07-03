@@ -11,8 +11,8 @@ from .kernel import L2Kernel
 # CHOICE PARAMETERS
 ###################
 
-SOURCE_BUILDING = False
-KERNEL_COMPUTATION = True
+SOURCE_BUILDING = True
+KERNEL_COMPUTATION = False
 
 ############################
 # SOURCE BUILDING PARAMETERS
@@ -20,13 +20,12 @@ KERNEL_COMPUTATION = True
 # Path to the mseed file of real data
 real_data_path = '/disks/data/PhD/CMB/simu3D_CMB/REAL_DATA/output/obspyfied/REAL_DATA.mseed'
 # Path to element output of synthetic data
-element_path = '/disks/data/PhD/CMB/simu1D_element/FORWARD_DATA/output/elements/entire_earth'
+element_path = '/disks/data/PhD/CMB/simu1D_element/FORWARD/output/elements/entire_earth'
 
 # location info
 network = 'A'
 station = '22'
 location = '*'
-channel_type = 'RTZ'
 
 # Window size [seconds]
 T = 40

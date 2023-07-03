@@ -60,7 +60,7 @@ class L2Kernel():
         sensitivity_df = pd.DataFrame(sensitivity)
         sensitivity_df.to_csv(sensitivity_out_path + '/' + 'sensitivity_rho.txt', sep=' ', index=False)
 
-    def evaluate(self, point):
+    def evaluate_rho_0(self, point):
 
         # get forwards and backward waveforms at this point
         forward_waveform = np.nan_to_num(self.forward_data.load_data_at_point(point, channels=['U']))
@@ -98,6 +98,21 @@ class L2Kernel():
         sensitivity = integrate.simpson(fw_bw, dx=(windowed_time[1] - windowed_time[0]))
         return sensitivity
     
+
+    def evaluate_lambda(self, point):
+        # get forwards and backward waveforms at this point
+        forward_waveform = np.nan_to_num(self.forward_data.load_data_at_point(point, channels=['E']))
+        backward_waveform = np.nan_to_num(self.backward_data.load_data_at_point(point, channels=['E']))
+
+
+
+
+    def evaluate_mu(self, point):
+        # get forwards and backward waveforms at this point
+        forward_waveform = np.nan_to_num(self.forward_data.load_data_at_point(point, channels=['E']))
+        backward_waveform = np.nan_to_num(self.backward_data.load_data_at_point(point, channels=['E']))
+
+
     def evaluate_on_slice(self, source_loc: list, station_loc: list,
                           R_min: float, R_max: float, N: int, slice_out_path: str):
         
