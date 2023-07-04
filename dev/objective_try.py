@@ -1,7 +1,7 @@
-from .objective_function import L2Objective_Function
-from AxiSEM3D_Data_Handler.element_output import ElementOutput
-from AxiSEM3D_Data_Handler.station_output import StationOutput
-from AxiSEM3D_Data_Handler.obspy_output import ObspyfiedOutput
+from ..core.kernels.objective_function import L2Objective_Function
+from ..core.handlers.element_output import ElementOutput
+from ..core.handlers.station_output import StationOutput
+from ..core.handlers.obspy_output import ObspyfiedOutput
 
 
 fwd = ElementOutput('/disks/data/PhD/CMB/simu1D_element/FORWARD_DATA/output/elements/entire_earth')
