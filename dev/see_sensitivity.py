@@ -1,4 +1,4 @@
-from AxiSEM3D_Data_Handler.element_output import ElementOutput
+from ..core.handlers.element_output import ElementOutput
 
 path = '/disks/data/PhD/CMB/simu1D_element/BACKWARD_DATA/output/elements/entire_earth'
 element = ElementOutput(path_to_element_output=path)

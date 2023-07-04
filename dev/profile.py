@@ -1,8 +1,6 @@
-from .element_output import ElementOutput
-from .station_output import StationOutput
+from ..core.handlers.element_output import ElementOutput
+from ..core.handlers.station_output import StationOutput
 from line_profiler import LineProfiler
-
-import time 
 
 def profiled_code():
     path_to_element_output = "/disks/data/PhD/CMB/simu1D_element/BACKWARD_DATA/output/elements/entire_earth"
