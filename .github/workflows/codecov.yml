@@ -31,7 +31,9 @@ jobs:
             python-version: ${{ matrix.python-version }}
 
         - name: Install dependencies
-          run: pip install -r requirements.txt
+          run: |
+            conda create --name test requirements.txt
+            conda activate test
 
         - name: Run tests with coverage
           run: |
