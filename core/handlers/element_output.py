@@ -17,7 +17,7 @@ import concurrent.futures
 import time
 
 from .axisem3d_output import AxiSEM3DOutput
-from ...aux.helper_functions import sph2cart, cart2sph
+from ...aux.coordinate_transforms import sph2cart, cart2sph, geo2cyl, cart2polar
 
 class ElementOutput(AxiSEM3DOutput):
     def __init__(self, path_to_element_output:str) -> None:
@@ -340,7 +340,7 @@ class ElementOutput(AxiSEM3DOutput):
             point[1] = np.deg2rad(point[1])
             point[2] = np.deg2rad(point[2])
 
-        _, _, phi = self._geo_to_cyl(point)
+        _, _, phi = geo2cyl(point, self.rotation_matrix)
 
         # Get channel slices from channels
         if channels is not None:
@@ -402,11 +402,11 @@ class ElementOutput(AxiSEM3DOutput):
             np.ndarray: The interpolated displacement data in time for all available channels,
                         represented as a NumPy array.
         """      
-        
+
         # Transform geographical to cylindrical coords in source frame
-        s, z, _ = self._geo_to_cyl(point)
+        s, z, _ = geo2cyl(point, self.rotation_matrix)
         # spherical coordinates will be used for the GLL interpolation
-        [r, theta] = self._cart_to_polar(s,z)
+        [r, theta] = cart2polar(s,z)
 
         if self.grid_format == [0,2,4]:
             # The of the element are positioned like this (GLL point)
@@ -434,10 +434,10 @@ class ElementOutput(AxiSEM3DOutput):
                     break
             # get the element points
             element_points = self.list_element_coords[element_index]
-            radial_element_GLL_points = self._cart_to_polar(element_points[[0,1,2]][:,0], 
-                                                            element_points[[0,1,2]][:,1])[0]
-            theta_element_GLL_points = self._cart_to_polar(element_points[[0,3,6]][:,0], 
-                                                           element_points[[0,3,6]][:,1])[1]
+            radial_element_GLL_points = cart2polar(element_points[[0,1,2]][:,0], 
+                                                    element_points[[0,1,2]][:,1])[0]
+            theta_element_GLL_points = cart2polar(element_points[[0,3,6]][:,0], 
+                                                    element_points[[0,3,6]][:,1])[1]
 
             # Now we get the data
             data_wave = self._read_element_data(element_na=element_na, file_index=file_index,
@@ -562,62 +562,6 @@ class ElementOutput(AxiSEM3DOutput):
         return np.asarray([[np.cos(colatitude) * np.cos(longitude), -np.sin(longitude), np.sin(colatitude) * np.cos(longitude)],
                            [np.cos(colatitude) * np.sin(longitude), np.cos(longitude), np.sin(colatitude) * np.sin(longitude)],
                            [-np.sin(colatitude), 0, np.cos(colatitude)]])
-
-
-    def _geo_to_cyl(self, point: list) -> list:
-        """
-        Convert geographical coordinates to cylindrical coordinates in the
-        seismic frame.
-
-        Args:
-            point (list): [radial position in m, latitude in rad, longitude in rad]
-
-        Returns:
-            list: [radial position in m, vertical position in m, azimuth from
-            source in rad]
-        """
-        radial_pos = point[0]
-        latitude = point[1]
-        longitude = point[2]
-
-        cos_lat = np.cos(latitude)
-        sin_lat = np.sin(latitude)
-        cos_lon = np.cos(longitude)
-        sin_lon = np.sin(longitude)
-
-        # Transform geographical coordinates to Cartesian coordinates in the
-        # Earth frame
-        x_earth = radial_pos * cos_lat * cos_lon
-        y_earth = radial_pos * cos_lat * sin_lon
-        z_earth = radial_pos * sin_lat
-
-        # Rotate coordinates from the Earth frame to the source frame
-        rotated_coords = np.matmul(self.rotation_matrix.transpose(), np.asarray([x_earth, y_earth, z_earth]))
-        x, y, z = rotated_coords
-
-        # Convert to cylindrical coordinates in the source frame
-        s = np.sqrt(x**2 + y**2)
-        phi = np.arctan2(y, x)
-
-        return [s, z, phi]
-
-
-
-    def _cart_to_polar(self, s: float, z: float) -> list:
-        """Transforms inplane cylindrical coords (cartesian)
-        to polar coords
-
-        Args:
-            s (float): distance from cylindarical axis in m
-            z (float): distance along cylindrical axis in m
-
-        Returns:
-            list: [radius, theta]
-        """       
-        r = np.sqrt(s**2 + z**2)
-        theta = np.arctan(z/s)
-        
-        return [r, theta]
 
 
     def _lagrange(self, evaluation_point, evaluation_GLL_point, GLL_points):

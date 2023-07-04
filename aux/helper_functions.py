@@ -66,32 +66,3 @@ def window_data(time_array, data_array, t_min, t_max):
     except:
         filtered_data_array = data_array[mask]
     return filtered_time_array, filtered_data_array
-
-
-def sph2cart(rad: float, lat: float, lon: float) -> np.ndarray:
-    """
-    Convert spherical coordinates to Cartesian coordinates.
-
-    Args:
-        rad (float): The radius.
-        lat (float): The latitude in radians.
-        lon (float): The longitude in radians.
-
-    Returns:
-        np.ndarray: An array containing the Cartesian coordinates [x, y, z].
-    """
-    cos_lat = np.cos(lat)
-
-    x = rad * cos_lat * np.cos(lon)
-    y = rad * cos_lat * np.sin(lon)
-    z = rad * np.sin(lat)
-    
-    return np.asarray([x, y, z])
-
-
-def cart2sph(x, y, z):
-    rad = np.sqrt(x*x + y*y + z*z)
-    lat = np.arcsin(z / rad)
-    lon = np.arctan2(y, x)
-    
-    return np.asarray([rad, lat, lon])
