@@ -1,8 +1,8 @@
 import numpy as np 
-from AxiSEM3D_Data_Handler.element_output import ElementOutput
-from AxiSEM3D_Data_Handler.station_output import StationOutput
-from AxiSEM3D_Data_Handler.obspy_output import ObspyfiedOutput
-from .helper_functions import window_data
+from ..handlers.element_output import ElementOutput
+from ..handlers.station_output import StationOutput
+from ..handlers.obspy_output import ObspyfiedOutput
+from ...aux.helper_functions import window_data
 
 import matplotlib.pyplot as plt
 

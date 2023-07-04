@@ -1,5 +1,5 @@
-from AxiSEM3D_Data_Handler.element_output import ElementOutput
-from .helper_functions import window_data, sph2cart, cart2sph
+from ..handlers.element_output import ElementOutput
+from ...aux.helper_functions import window_data
 
 import numpy as np
 import pandas as pd

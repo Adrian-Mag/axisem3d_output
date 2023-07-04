@@ -13,10 +13,6 @@ from obspy.core.inventory import Inventory, Network, Station, Channel
 
 from .axisem3d_output import AxiSEM3DOutput
 
-#@@@@@@@@@@
-# HANDLER @
-#@@@@@@@@@@
-
 class StationOutput(AxiSEM3DOutput):
     def __init__(self, path_to_station_output: str):
         """Class for handling axisem station output in netcdf format. 

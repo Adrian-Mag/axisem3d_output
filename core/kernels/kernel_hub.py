@@ -1,6 +1,6 @@
 from .source_builder import L2_STF_builder
-from AxiSEM3D_Data_Handler.obspy_output import ObspyfiedOutput
-from .helper_functions import find_phase_window
+from ..handlers.obspy_output import ObspyfiedOutput
+from ...aux.helper_functions import find_phase_window
 from .kernel import L2Kernel
 
 #@@@@@@@@@@@@@

@@ -1,13 +1,10 @@
-from AxiSEM3D_Data_Handler.element_output import ElementOutput
-from AxiSEM3D_Data_Handler.obspy_output import ObspyfiedOutput
-from .helper_functions import find_phase_window, window_data
+from ..handlers.element_output import ElementOutput
+from ..handlers.obspy_output import ObspyfiedOutput
+from ...aux.helper_functions import window_data
 
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-
-
-
 
 def save_STF(directory, master_time, STF, channel_type):
     for index, channel in enumerate(channel_type):

@@ -17,7 +17,7 @@ import concurrent.futures
 import time
 
 from .axisem3d_output import AxiSEM3DOutput
-from AxiSEM3D_Kernels import sph2cart, cart2sph
+from ...aux.helper_functions import sph2cart, cart2sph
 
 class ElementOutput(AxiSEM3DOutput):
     def __init__(self, path_to_element_output:str) -> None:
