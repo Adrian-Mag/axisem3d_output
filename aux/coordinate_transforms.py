@@ -71,7 +71,7 @@ def geo2cyl(point: list, rotation_matrix: np.ndarray) -> list:
     return [s, z, phi]
 
 
-def cart2polar(self, s: float, z: float) -> list:
+def cart2polar(s: float, z: float) -> list:
     """Transforms inplane cylindrical coords (cartesian)
     to polar coords
 
